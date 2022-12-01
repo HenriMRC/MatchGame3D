@@ -1,0 +1,16 @@
+{
+    "name": "ArkadiumTest.Logic",
+    "rootNamespace": "ArkadiumTest.Logic",
+    "references": [
+        "GUID:06d156721e8caa94fa84d0da019e2a13"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

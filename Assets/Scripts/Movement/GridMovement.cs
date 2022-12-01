@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -17,10 +19,12 @@ namespace ArkadiumTest.Movement
         [SerializeField,Range(0.001f, 1)]
         private float _dragEase = 0.1f;
 
-        [SerializeField]
-        private Transform _selectionMarker;
+        private Action<Transform> _onClick;
 
-        private Transform _selected;
+        public void RegisterOnClick(Action<Transform> onClick)
+        {
+            _onClick = onClick;
+        }
 
         public void OnCancel(BaseEventData eventData)
         {
@@ -54,12 +58,7 @@ namespace ArkadiumTest.Movement
         {
             if (_state == State.Down)
             {
-                _selected = eventData.pointerCurrentRaycast.gameObject.transform;
-                bool selected = _selected != null;
-
-                _selectionMarker.gameObject.SetActive(selected);
-                if (selected)
-                    _selectionMarker.position = _selected.position;
+                _onClick?.Invoke(eventData.pointerCurrentRaycast.gameObject.transform);
 
 #if UNITY_EDITOR && false
                 UnityEditor.Selection.activeGameObject = eventData.pointerCurrentRaycast.gameObject;
