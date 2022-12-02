@@ -1,16 +1,15 @@
-using ArkadiumTest.Movement;
+using ArkadiumTest.Game;
 using System;
-using System.Collections.Generic;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
-using Grid3D = ArkadiumTest.Logic.Grid3D;
 
 [CustomEditor(typeof(Grid3D))]
-public class GridEditor : Editor
+public class Grid3DEditor : Editor
 {
     private const string VAR_SCRIPT = "m_Script";
     private const string VAR_TRANSFORMS = "_transforms";
+    private const string VAR_COORDINATES = "_coordinates";
     private const string VAR_DIMENSIONS = "_dimensions";
     private const string VAR_SELECTED = "_selected";
 
@@ -47,6 +46,7 @@ public class GridEditor : Editor
                     EditorGUI.EndDisabledGroup();
                     break;
                 case VAR_TRANSFORMS:
+                case VAR_COORDINATES:
                     EditorGUI.BeginDisabledGroup(true);
                     EditorGUILayout.PropertyField(iterator);
                     EditorGUI.EndDisabledGroup();
@@ -87,18 +87,20 @@ public class GridEditor : Editor
         Transform parent = (target as Grid3D).transform;
         Vector3Int dimensions = serializedObject.FindProperty(VAR_DIMENSIONS).vector3IntValue;
         SerializedProperty transforms = serializedObject.FindProperty(VAR_TRANSFORMS);
+        SerializedProperty coordinates = serializedObject.FindProperty(VAR_COORDINATES);
 
         for (int i = 0; i < transforms.arraySize; i++)
             DestroyImmediate((transforms.GetArrayElementAtIndex(i).objectReferenceValue as Transform).gameObject);
 
-        transforms.arraySize = dimensions.x * dimensions.y * dimensions.z;
+        coordinates.arraySize = transforms.arraySize = dimensions.x * dimensions.y * dimensions.z;
 
-        float zStart = (float)(dimensions.z - 1) / 2;
         int count = 0;
-        for (int z = 0; z < dimensions.z; z++)
+        float yStart = (float)(dimensions.y - 1) / 2;
+        for (int y = 0; y < dimensions.y; y++)
         {
-            float yStart = (float)(dimensions.y - 1) / 2;
-            for (int y = 0; y < dimensions.y; y++)
+            float zStart = (float)(dimensions.z - 1) / 2;
+
+            for (int z = 0; z < dimensions.z; z++)
             {
                 float xStart = (float)(dimensions.x - 1) / 2;
                 for (int x = 0; x < dimensions.x; x++)
@@ -106,7 +108,9 @@ public class GridEditor : Editor
                     Transform instance = (PrefabUtility.InstantiatePrefab(prefab, parent) as GameObject).transform;
                     instance.localPosition = new Vector3(x - xStart, y - yStart, z - zStart);
                     instance.name = $"{x} - {y} - {z}";
-                    transforms.GetArrayElementAtIndex(count++).objectReferenceValue = instance;
+                    transforms.GetArrayElementAtIndex(count).objectReferenceValue = instance;
+                    coordinates.GetArrayElementAtIndex(count).vector3IntValue = new Vector3Int(x, y, z);
+                    count++;
                 }
             }
         }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-namespace ArkadiumTest.Movement
+namespace ArkadiumTest.Game
 {
     public class GridMovement : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDragHandler, IEndDragHandler, ICancelHandler
     {
@@ -21,7 +21,7 @@ namespace ArkadiumTest.Movement
 
         private Action<Transform> _onClick;
 
-        public void RegisterOnClick(Action<Transform> onClick)
+        internal void RegisterOnClick(Action<Transform> onClick)
         {
             _onClick = onClick;
         }
