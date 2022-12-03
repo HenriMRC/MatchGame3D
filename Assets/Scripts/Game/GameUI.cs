@@ -10,6 +10,8 @@ namespace ArkadiumTest.Game
 
         [SerializeField]
         private TMP_Text _score;
+        [SerializeField]
+        private TMP_Text _multiplier;
 
         [SerializeField]
         private TMP_Text _finalScore;
@@ -26,9 +28,17 @@ namespace ArkadiumTest.Game
             _tmp.text = $"<mspace=0.6em>{minutes}</mspace>:<mspace=0.6em>{seconds:00}</mspace>";
         }
 
-        public void UpdateUIScore(int score)
+        public void UpdateUIScore(int score, int multiplier)
         {
             _score.text = $"<mspace=0.6em>{score:0000}</mspace>";
+
+            if (multiplier > 1)
+            {
+                _multiplier.gameObject.SetActive(true);
+                _multiplier.text = $"x{multiplier}";
+            }
+            else
+                _multiplier.gameObject.SetActive(false);
         }
 
         public void GameEnded(bool win, int score)

@@ -19,6 +19,11 @@ namespace ArkadiumTest.Manager
         private float _time = 300;
 
         [SerializeField]
+        private float _multiplierInterval = 3;
+        private float _lastScoreTime = float.PositiveInfinity;
+        private int _multiplier = 1;
+
+        [SerializeField]
         private int _scorePerMatch = 100;
         private int _score = 0;
 
@@ -35,7 +40,7 @@ namespace ArkadiumTest.Manager
             _instance = this;
 
             _gameUI.UpdateUITimer(_time);
-            _gameUI.UpdateUITimer(_score);
+            _gameUI.UpdateUIScore(_score, _multiplier);
         }
 
         private void OnDestroy()
@@ -71,8 +76,15 @@ namespace ArkadiumTest.Manager
 
         private void OnScore()
         {
-            _score += _scorePerMatch;
-            _gameUI.UpdateUIScore(_score);
+            if (_lastScoreTime - _time > _multiplierInterval)
+                _multiplier = 1;
+            else
+                _multiplier++;
+
+            _lastScoreTime = _time;
+
+            _score += _multiplier * _scorePerMatch;
+            _gameUI.UpdateUIScore(_score, _multiplier);
         }
 
         private void OnWin()
