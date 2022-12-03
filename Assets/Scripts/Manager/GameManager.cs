@@ -77,15 +77,25 @@ namespace ArkadiumTest.Manager
 
         private void OnWin()
         {
-            Debug.Log("Victory");
             StopCoroutine(_coroutine);
             _grid.Stop();
+            _gameUI.GameEnded(true, _score);
         }
 
         private void OnLose()
         {
-            Debug.Log("Defeat");
             _grid.Stop();
+            _gameUI.GameEnded(false, _score);
+        }
+
+        public void PlayAgain()
+        {
+            SystemManager.Instance.ReceiveRequest(SystemManagerRequest.GoToGame);
+        }
+
+        public void BackToMainMenu()
+        {
+            SystemManager.Instance.ReceiveRequest(SystemManagerRequest.GoToMainMenu);
         }
     }
 }
