@@ -41,6 +41,7 @@ namespace ArkadiumTest.Manager
 
             _gameUI.UpdateUITimer(_time);
             _gameUI.UpdateUIScore(_score, _multiplier);
+            _gameUI.OnUnpaused += Unpause;
         }
 
         private void OnDestroy()
@@ -74,6 +75,26 @@ namespace ArkadiumTest.Manager
             OnLose();
         }
 
+        public void Pause()
+        {
+            if (_coroutine != null)
+            {
+                StopCoroutine(_coroutine);
+                _coroutine = null;
+            }
+
+            _grid.Play(false);
+            _gameUI.Pause();
+        }
+
+        private void Unpause()
+        {
+            if (_coroutine == null)
+                _coroutine = StartCoroutine(GameUpdate());
+
+            _grid.Play(true);
+        }
+
         private void OnScore()
         {
             if (_lastScoreTime - _time > _multiplierInterval)
@@ -90,13 +111,13 @@ namespace ArkadiumTest.Manager
         private void OnWin()
         {
             StopCoroutine(_coroutine);
-            _grid.Stop();
+            _grid.Play(false);
             _gameUI.GameEnded(true, _score);
         }
 
         private void OnLose()
         {
-            _grid.Stop();
+            _grid.Play(false);
             _gameUI.GameEnded(false, _score);
         }
 

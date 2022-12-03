@@ -1,3 +1,4 @@
+using System;
 using TMPro;
 using UnityEngine;
 
@@ -18,6 +19,8 @@ namespace ArkadiumTest.Game
 
         [SerializeField]
         private Animator _animator;
+
+        public event Action OnUnpaused;
 
         public void UpdateUITimer(float time)
         {
@@ -47,5 +50,17 @@ namespace ArkadiumTest.Game
 
             _finalScore.text = score.ToString();
         }
+
+        public void Pause()
+        {
+            _animator.SetBool("Pause", true);
+        }
+
+        public void Unpause()
+        {
+            _animator.SetBool("Pause", false);
+        }
+
+        public void OnUnpausedEvent() => OnUnpaused?.Invoke();
     }
 }

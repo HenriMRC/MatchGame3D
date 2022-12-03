@@ -73,7 +73,7 @@ namespace ArkadiumTest.Game
                 materials.Enqueue(material);
             }
 
-            _pointerComponent.enabled = false;
+            Play(false);
             _pointerComponent.RegisterOnClick(Select);
 
             _transforms = null;
@@ -85,12 +85,12 @@ namespace ArkadiumTest.Game
         {
             _onScore = onScore;
             _onWin = onWin;
-            _pointerComponent.enabled = true;
+            Play(true);
         }
 
-        public void Stop()
+        public void Play(bool play)
         {
-            _pointerComponent.enabled = false;
+            _pointerComponent.enabled = play;
         }
 
         private void Select(Transform slot)
