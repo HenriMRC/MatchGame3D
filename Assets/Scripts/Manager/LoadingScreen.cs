@@ -1,8 +1,6 @@
-using Codice.Client.BaseCommands;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using TMPro;
 using UnityEngine;
 
@@ -125,7 +123,7 @@ namespace ArkadiumTest.Manager
 
             _canvasGroup.alpha = 0;
             gameObject.SetActive(false);
-            
+
             onEnded();
         }
     }

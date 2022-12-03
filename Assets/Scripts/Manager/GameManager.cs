@@ -1,6 +1,5 @@
 using ArkadiumTest.Game;
 using System.Collections;
-using System.Runtime.InteropServices;
 using UnityEngine;
 
 namespace ArkadiumTest.Manager
