@@ -9,6 +9,9 @@ namespace ArkadiumTest.Game
     public class Grid3D : MonoBehaviour
     {
         [SerializeField]
+        private GridPointerComponent _pointerComponent;
+
+        [SerializeField]
         private Vector3Int _dimensions;
 
         [SerializeField]
@@ -28,6 +31,7 @@ namespace ArkadiumTest.Game
         private Dictionary<Vector3Int, Transform> _transformTable;
         private Dictionary<Vector3Int, int> _symbolTable;
 
+        private Action _onScore;
         private Action _onWin;
 
         private void Awake()
@@ -69,11 +73,24 @@ namespace ArkadiumTest.Game
                 materials.Enqueue(material);
             }
 
-            GetComponent<GridMovement>().RegisterOnClick(Select);
+            _pointerComponent.enabled = false;
+            _pointerComponent.RegisterOnClick(Select);
 
             _transforms = null;
             _coordinates = null;
             _materials = null;
+        }
+
+        public void StartGame(Action onScore, Action onWin)
+        {
+            _onScore = onScore;
+            _onWin = onWin;
+            _pointerComponent.enabled = true;
+        }
+
+        public void Stop()
+        {
+            _pointerComponent.enabled = false;
         }
 
         private void Select(Transform slot)
@@ -101,6 +118,8 @@ namespace ArkadiumTest.Game
 
                     _selected = null;
                     _selectionMarker.gameObject.SetActive(false);
+
+                    _onScore.Invoke();
 
                     if (_coordinateTable.Count == 0)
                         _onWin.Invoke();
@@ -135,10 +154,6 @@ namespace ArkadiumTest.Game
                 return false;
         }
 
-        internal void RegisterOnWin(Action onWin)
-        {
-            _onWin = onWin;
-        }
 
 #if UNITY_EDITOR
         private void OnValidate()
@@ -146,6 +161,10 @@ namespace ArkadiumTest.Game
             _dimensions.x = Mathf.Max(1, _dimensions.x);
             _dimensions.y = Mathf.Max(1, _dimensions.y);
             _dimensions.z = Mathf.Max(1, _dimensions.z);
+
+            _pointerComponent = GetComponent<GridPointerComponent>();
+            if (_pointerComponent == null)
+                _pointerComponent = gameObject.AddComponent<GridPointerComponent>();
         }
 #endif
     }

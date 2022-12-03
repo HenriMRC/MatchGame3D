@@ -2,7 +2,8 @@
     "name": "ArkadiumTest.Manager",
     "rootNamespace": "ArkadiumTest.Manager",
     "references": [
-        "GUID:6055be8ebefd69e48b49212b09b47b2f"
+        "GUID:6055be8ebefd69e48b49212b09b47b2f",
+        "GUID:bdec1c1c53d6641488ab3b8b2641d620"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

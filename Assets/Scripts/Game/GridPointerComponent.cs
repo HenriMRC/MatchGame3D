@@ -1,11 +1,11 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
 namespace ArkadiumTest.Game
 {
-    public class GridMovement : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDragHandler, IEndDragHandler, ICancelHandler
+    [DisallowMultipleComponent]
+    public class GridPointerComponent : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDragHandler, IEndDragHandler, ICancelHandler
     {
         enum State : byte
         {
@@ -16,7 +16,7 @@ namespace ArkadiumTest.Game
         private State _state = State.None;
         private Vector2 _position = Vector2.zero;
 
-        [SerializeField,Range(0.001f, 1)]
+        [SerializeField, Range(0.001f, 1)]
         private float _dragEase = 0.1f;
 
         private Action<Transform> _onClick;

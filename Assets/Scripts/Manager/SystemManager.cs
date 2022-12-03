@@ -117,7 +117,7 @@ namespace ArkadiumTest.Manager
 
         private void StartGame()
         {
-            Debug.LogWarning("StartGame");
+            GameManager.Instance.StartGame();
         }
 
         private class LoadSceneProcess : ILoadProcess
