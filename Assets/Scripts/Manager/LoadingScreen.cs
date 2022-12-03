@@ -1,6 +1,8 @@
 using Codice.Client.BaseCommands;
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics;
 using TMPro;
 using UnityEngine;
 
@@ -11,8 +13,6 @@ namespace ArkadiumTest.Manager
         [SerializeField]
         private CanvasGroup _canvasGroup;
 
-        private Coroutine _coroutine;
-
         [SerializeField]
         private TMP_Text _loadingText;
         [SerializeField]
@@ -21,13 +21,13 @@ namespace ArkadiumTest.Manager
         [SerializeField]
         private RectTransform _loadingBar;
 
-        internal void Show(Action onEnded, float duration = 1f)
+        internal void Show(Queue<ILoadProcess> processes, Action onEnded, float duration = 1f)
         {
             gameObject.SetActive(true);
-            _coroutine = StartCoroutine(ShowCoroutine(onEnded, duration));
+            StartCoroutine(ShowCoroutine(processes, onEnded, duration));
         }
 
-        private IEnumerator ShowCoroutine(Action onEnded, float duration)
+        private IEnumerator ShowCoroutine(Queue<ILoadProcess> processes, Action onEnded, float duration)
         {
             float time = 0;
             if (duration == 0f)
@@ -43,44 +43,54 @@ namespace ArkadiumTest.Manager
                     _canvasGroup.alpha = time / duration;
                 }
 
-            yield return null;
-
-            _coroutine = null;
-            onEnded?.Invoke();
+            StartProcess(processes, onEnded);
         }
 
-        internal void StartProcess(Func<float> onUpdate)
+        private void StartProcess(Queue<ILoadProcess> processes, Action onEnded)
         {
             _loadingText.gameObject.SetActive(true);
             _loadingPercent.gameObject.SetActive(true);
 
-            _coroutine = StartCoroutine(ProcessCoroutine(onUpdate));
+            StartCoroutine(ProcessCoroutine(processes, onEnded));
         }
 
-        private IEnumerator ProcessCoroutine(Func<float> onUpdate)
+        private IEnumerator ProcessCoroutine(Queue<ILoadProcess> processes, Action onEnded)
         {
             const int LOADING_MAX_LENGHT = 10;
             const float DURATION = 0.5f;
             float time = 0;
+            float processesCount = processes.Count;
+            float currentProcess = 0;
 
-            while (true)
+            while (processes.TryDequeue(out ILoadProcess process))
             {
-                yield return null;
+                IEnumerator enumerator = process.StartProcess();
 
-                UpdateProgress(Mathf.Clamp01(onUpdate()));
-
-                time += Time.deltaTime;
-
-                if (time > DURATION)
+                do
                 {
-                    time %= DURATION;
+                    yield return null;
 
-                    if (_loadingText.text.Length == LOADING_MAX_LENGHT)
-                        _loadingText.text = "LOADING";
-                    else
-                        _loadingText.text += ".";
-                }
+                    UpdateProgress((Mathf.Clamp01(process.Progress) + currentProcess) / processesCount);
+
+                    time += Time.deltaTime;
+
+                    if (time > DURATION)
+                    {
+                        time %= DURATION;
+
+                        if (_loadingText.text.Length == LOADING_MAX_LENGHT)
+                            _loadingText.text = "LOADING";
+                        else
+                            _loadingText.text += ".";
+                    }
+                } while (enumerator.MoveNext());
+
+                currentProcess++;
             }
+
+            UpdateProgress(1);
+
+            Hide(onEnded);
         }
 
         private void UpdateProgress(float progress)
@@ -92,20 +102,9 @@ namespace ArkadiumTest.Manager
             _loadingPercent.text = $"<mspace=0.8em>{(int)(progress * 100)}%</mspace>";
         }
 
-        internal void EndProcess()
+        internal void Hide(Action onEnded)
         {
-            if (_coroutine != null && !_coroutine.Equals(null))
-            {
-                StopCoroutine(_coroutine);
-                _coroutine = null;
-            }
-
-            UpdateProgress(1);
-        }
-
-        internal void Hide(Action onEnded, float duration = 1f)
-        {
-            _coroutine = StartCoroutine(HideCoroutine(onEnded, duration));
+            StartCoroutine(HideCoroutine(onEnded, 0.5f));
         }
 
         private IEnumerator HideCoroutine(Action onEnded, float duration)
@@ -121,15 +120,20 @@ namespace ArkadiumTest.Manager
                 _canvasGroup.alpha = time / duration;
             }
 
-            _coroutine = null;
-
             _loadingText.text = "LOADING";
             UpdateProgress(0);
 
             _canvasGroup.alpha = 0;
             gameObject.SetActive(false);
             
-            onEnded?.Invoke();
+            onEnded();
         }
+    }
+
+    public interface ILoadProcess
+    {
+        public float Progress { get; }
+
+        public IEnumerator StartProcess();
     }
 }

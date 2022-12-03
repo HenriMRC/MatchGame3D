@@ -1,4 +1,6 @@
-using TMPro;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEditor.PackageManager.Requests;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using static ArkadiumTest.Manager.SystemManagerRequest;
@@ -20,7 +22,7 @@ namespace ArkadiumTest.Manager
             Game = 2,
             Loading = 3
         }
-        
+
         private State state
         {
             set
@@ -31,7 +33,7 @@ namespace ArkadiumTest.Manager
         }
         private State _state = State.None;
         private State _previousState = State.None;
-        
+
         private SystemManagerRequest _processing = None;
 
         private void Awake()
@@ -48,8 +50,12 @@ namespace ArkadiumTest.Manager
         private void Start()
         {
             state = State.Loading;
-            _processing = GoToGame;
-            _loadingScreen.Show(DoLoadMainMenu, 0);
+            _processing = GoToMainMenu;
+
+            Queue<ILoadProcess> loadProcesses = new Queue<ILoadProcess>();
+            loadProcesses.Enqueue(new LoadSceneProcess(1, true));
+
+            _loadingScreen.Show(loadProcesses, OnRequestProcessed, 0);
         }
 
         internal bool ReceiveRequest(SystemManagerRequest request)
@@ -66,14 +72,19 @@ namespace ArkadiumTest.Manager
                         return false;
 
                     state = State.Loading;
-                    _loadingScreen.Show(LoadMainMenu);
+
+                    Queue<ILoadProcess> goToMainMenu = new Queue<ILoadProcess>();
+                    goToMainMenu.Enqueue(new UnloadSceneProcess((int)_previousState));
+                    goToMainMenu.Enqueue(new LoadSceneProcess(1, true));
+                    _loadingScreen.Show(goToMainMenu, OnRequestProcessed);
                     return true;
                 case GoToGame:
-                    if (_state == State.Game)
-                        return false;
-
                     state = State.Loading;
-                    _loadingScreen.Show(LoadGame);
+
+                    Queue<ILoadProcess> goToGame = new Queue<ILoadProcess>();
+                    goToGame.Enqueue(new UnloadSceneProcess((int)_previousState));
+                    goToGame.Enqueue(new LoadSceneProcess(2, true));
+                    _loadingScreen.Show(goToGame, OnRequestProcessed);
                     return true;
                 case None:
                 default:
@@ -82,64 +93,108 @@ namespace ArkadiumTest.Manager
             }
         }
 
-        private void LoadMainMenu()
+
+        private void OnRequestProcessed()
         {
-            AsyncOperation handle = SceneManager.UnloadSceneAsync((int)_previousState);
-            handle.completed += DoLoadMainMenu;
-
-            _loadingScreen.StartProcess(() => handle.progress / 2);
-        }
-
-        private void DoLoadMainMenu() => DoLoadMainMenu(null);
-        private void DoLoadMainMenu(AsyncOperation handle)
-        {
-            _loadingScreen.EndProcess();
-
-            handle = SceneManager.LoadSceneAsync(1, LoadSceneMode.Additive);
-            handle.allowSceneActivation = true;
-            handle.completed += MainMenuLoaded;
-
-            _loadingScreen.StartProcess(() => 0.5f + handle.progress / 2);
-        }
-
-        private void MainMenuLoaded(AsyncOperation handle)
-        {
-            _loadingScreen.EndProcess();
-            _loadingScreen.Hide(null);
+            SystemManagerRequest request = _processing;
             _processing = None;
-            state = State.MainMenu;
-        }
 
-        private void LoadGame()
-        {
-            AsyncOperation handle = SceneManager.UnloadSceneAsync((int)_previousState);
-            handle.completed += DoLoadGame;
-
-            _loadingScreen.StartProcess(() => handle.progress / 2);
-        }
-
-        private void DoLoadGame(AsyncOperation handle)
-        {
-            _loadingScreen.EndProcess();
-
-            handle = SceneManager.LoadSceneAsync(2, LoadSceneMode.Additive);
-            handle.allowSceneActivation = true;
-            handle.completed += GameLoaded;
-
-            _loadingScreen.StartProcess(() => 0.5f + handle.progress / 2);
-        }
-
-        private void GameLoaded(AsyncOperation handle)
-        {
-            _loadingScreen.EndProcess();
-            _loadingScreen.Hide(StartGame);
-            _processing = None;
-            state = State.Game;
+            switch (request)
+            {
+                case GoToMainMenu:
+                    state = State.MainMenu;
+                    break;
+                case GoToGame:
+                    state = State.Game;
+                    StartGame();
+                    break;
+                case None:
+                default:
+                    Debug.LogWarning("None");
+                    break;
+            }
         }
 
         private void StartGame()
         {
             Debug.LogWarning("StartGame");
+        }
+
+        private class LoadSceneProcess : ILoadProcess
+        {
+            public float Progress => _handle?.progress ?? 0;
+
+            private AsyncOperation _handle;
+
+            private readonly int _sceneIndex;
+            private readonly bool _allowSceneActivation;
+
+            private bool _started;
+            private bool _completed;
+
+            internal LoadSceneProcess(int sceneIndex, bool allowSceneActivation)
+            {
+                _sceneIndex = sceneIndex;
+                _allowSceneActivation = allowSceneActivation;
+            }
+
+            public IEnumerator StartProcess()
+            {
+                if (_started)
+                    yield break;
+
+                _started = true;
+
+                _handle = SceneManager.LoadSceneAsync(_sceneIndex, LoadSceneMode.Additive);
+                _handle.allowSceneActivation = _allowSceneActivation;
+                _handle.completed += OnCompleted;
+
+                while (!_completed)
+                    yield return null;
+            }
+
+            private void OnCompleted(AsyncOperation handle)
+            {
+                handle.completed -= OnCompleted;
+                _completed = true;
+            }
+        }
+
+        private class UnloadSceneProcess : ILoadProcess
+        {
+            public float Progress => _handle?.progress ?? 0;
+
+            private AsyncOperation _handle;
+
+            private readonly int _sceneIndex;
+
+            private bool _started;
+            private bool _completed;
+
+            internal UnloadSceneProcess(int sceneIndex)
+            {
+                _sceneIndex = sceneIndex;
+            }
+
+            public IEnumerator StartProcess()
+            {
+                if (_started)
+                    yield break;
+
+                _started = true;
+
+                _handle = SceneManager.UnloadSceneAsync(_sceneIndex);
+                _handle.completed += OnCompleted;
+
+                while (!_completed)
+                    yield return null;
+            }
+
+            private void OnCompleted(AsyncOperation handle)
+            {
+                handle.completed -= OnCompleted;
+                _completed = true;
+            }
         }
     }
 
