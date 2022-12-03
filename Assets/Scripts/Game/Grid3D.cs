@@ -34,6 +34,12 @@ namespace ArkadiumTest.Game
         private Action _onScore;
         private Action _onWin;
 
+        [SerializeField]
+        private AudioSource _matchSound;
+        [SerializeField]
+        private AudioSource _noSelectSound;
+
+
         private void Awake()
         {
             if (_transforms.Count % 2 != 0)
@@ -99,7 +105,12 @@ namespace ArkadiumTest.Game
             {
                 Vector3Int selected = _coordinateTable[slot];
                 if (!CanSelect(selected))
+                {
+                    if (!_noSelectSound.isPlaying)
+                        _noSelectSound.Play();
+
                     return;
+                }
 
                 if (_selected.HasValue && _selected.Value != selected && _symbolTable[_selected.Value] == _symbolTable[selected])
                 {
@@ -120,6 +131,7 @@ namespace ArkadiumTest.Game
                     _selectionMarker.gameObject.SetActive(false);
 
                     _onScore.Invoke();
+                    _matchSound.Play();
 
                     if (_coordinateTable.Count == 0)
                         _onWin.Invoke();
