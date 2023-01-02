@@ -63,30 +63,6 @@ namespace ArkadiumTest.Manager
             }
         }
 
-        internal float MusicSubVolume
-        {
-            get
-            {
-                return GetFloat("MusicSub");
-            }
-            set
-            {
-                SetFloat("MusicSub", value);
-            }
-        }
-
-        internal float SoundsSubVolume
-        {
-            get
-            {
-                return GetFloat("SoundsSub");
-            }
-            set
-            {
-                SetFloat("SoundsSub", value);
-            }
-        }
-
         private void Awake()
         {
             if (_instance != null && !_instance.Equals(null))

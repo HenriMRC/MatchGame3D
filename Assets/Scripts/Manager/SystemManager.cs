@@ -105,18 +105,13 @@ namespace ArkadiumTest.Manager
                     break;
                 case GoToGame:
                     state = State.Game;
-                    StartGame();
+                    (BaseManager.Instance as GameManager).StartGame();
                     break;
                 case None:
                 default:
                     Debug.LogWarning("None");
                     break;
             }
-        }
-
-        private void StartGame()
-        {
-            GameManager.Instance.StartGame();
         }
 
         private class LoadSceneProcess : ILoadProcess

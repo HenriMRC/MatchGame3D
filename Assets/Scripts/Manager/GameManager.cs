@@ -4,11 +4,8 @@ using UnityEngine;
 
 namespace ArkadiumTest.Manager
 {
-    public class GameManager : MonoBehaviour
+    public class GameManager : BaseManager
     {
-        internal static GameManager Instance => _instance;
-        private static GameManager _instance;
-
         [SerializeField]
         private GameUI _gameUI;
 
@@ -29,27 +26,13 @@ namespace ArkadiumTest.Manager
 
         private Coroutine _coroutine;
 
-        void Awake()
+        protected override void Awake()
         {
-            if (_instance != null && !_instance.Equals(null))
-            {
-                Destroy(gameObject);
-                return;
-            }
-
-            _instance = this;
+            base.Awake();
 
             _gameUI.UpdateUITimer(_time);
             _gameUI.UpdateUIScore(_score, _multiplier);
             _gameUI.OnUnpaused += Unpause;
-        }
-
-        private void OnDestroy()
-        {
-            if (_instance == this)
-                _instance = null;
-            else
-                Debug.LogError("More than one GameManager instances", _instance);
         }
 
         public void StartGame()

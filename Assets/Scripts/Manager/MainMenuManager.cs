@@ -1,8 +1,6 @@
-using UnityEngine;
-
 namespace ArkadiumTest.Manager
 {
-    public class MainMenuManager : MonoBehaviour
+    public class MainMenuManager : BaseManager
     {
         public void PlayButton()
         {

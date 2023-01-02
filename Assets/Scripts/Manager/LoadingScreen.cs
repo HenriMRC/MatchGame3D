@@ -31,7 +31,7 @@ namespace ArkadiumTest.Manager
             if (duration == 0f)
             {
                 _canvasGroup.alpha = 1;
-                AudioManager.Instance.MusicSubVolume = 0;
+                BaseManager.Instance?.SetMainAudioVolume(0);
             }
             else
                 while (time < duration)
@@ -42,7 +42,7 @@ namespace ArkadiumTest.Manager
                     time = Mathf.Min(time, duration);
 
                     _canvasGroup.alpha = time / duration;
-                    AudioManager.Instance.MusicSubVolume = 1 - _canvasGroup.alpha;
+                    BaseManager.Instance?.SetMainAudioVolume(1 - _canvasGroup.alpha);
                 }
 
             StartProcess(processes, onEnded);
@@ -120,14 +120,14 @@ namespace ArkadiumTest.Manager
                 time = Mathf.Max(time, 0);
 
                 _canvasGroup.alpha = time / duration;
-                AudioManager.Instance.MusicSubVolume = 1 - _canvasGroup.alpha;
+                BaseManager.Instance?.SetMainAudioVolume(1 - _canvasGroup.alpha);
             }
 
             _loadingText.text = "LOADING";
             UpdateProgress(0);
 
             _canvasGroup.alpha = 0;
-            AudioManager.Instance.MusicSubVolume = 1;
+            BaseManager.Instance?.SetMainAudioVolume(1);
 
             gameObject.SetActive(false);
 
