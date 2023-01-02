@@ -55,28 +55,26 @@ namespace ArkadiumTest.Game
                 _transformTable.Add(_coordinates[i], _transforms[i]);
             }
 
-
             //Shuffle
-            Vector3Int[] coordinates = _coordinates.ToArray();
             var random = new Random();
-            coordinates = coordinates.OrderBy((x) => random.Next()).ToArray();
+            Vector3Int[] coordinates = _coordinates.OrderBy((x) => random.Next()).ToArray();
             Queue<Vector3Int> queue = new Queue<Vector3Int>(coordinates);
-
-            Queue<Material> materials = new Queue<Material>(_materials);
 
             //Assign symbol
             int[] symbols = new int[_transforms.Count];
+            int index = 0;
             while (queue.TryDequeue(out Vector3Int first) && queue.TryDequeue(out Vector3Int second))
             {
-                Material material = materials.Dequeue();
+                Material material = _materials[index];
 
                 _transformTable[first].GetComponent<MeshRenderer>().material = _transformTable[second].GetComponent<MeshRenderer>().material = material;
 
                 int symbol = _materials.IndexOf(material);
-                _symbolTable.Add(first, symbol);
-                _symbolTable.Add(second, symbol);
+                _symbolTable.Add(first, index);
+                _symbolTable.Add(second, index);
 
-                materials.Enqueue(material);
+                index++;
+                index %= _materials.Count;
             }
 
             Play(false);
@@ -174,8 +172,7 @@ namespace ArkadiumTest.Game
             _dimensions.y = Mathf.Max(1, _dimensions.y);
             _dimensions.z = Mathf.Max(1, _dimensions.z);
 
-            _pointerComponent = GetComponent<GridPointerComponent>();
-            if (_pointerComponent == null)
+            if (!TryGetComponent(out _pointerComponent))
                 _pointerComponent = gameObject.AddComponent<GridPointerComponent>();
         }
 #endif

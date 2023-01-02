@@ -5,7 +5,7 @@ using UnityEngine.EventSystems;
 namespace ArkadiumTest.Game
 {
     [DisallowMultipleComponent]
-    public class GridPointerComponent : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDragHandler, IEndDragHandler, ICancelHandler
+    public class GridPointerComponent : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IInitializePotentialDragHandler, IDragHandler, IEndDragHandler, ICancelHandler
     {
         enum State : byte
         {
@@ -29,6 +29,11 @@ namespace ArkadiumTest.Game
         public void OnCancel(BaseEventData eventData)
         {
             _state = State.None;
+        }
+
+        public void OnInitializePotentialDrag(PointerEventData eventData)
+        {
+            eventData.useDragThreshold = true;
         }
 
         public void OnDrag(PointerEventData eventData)
