@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ArkadiumTest.Configurations;
 using UnityEngine;
 using Random = System.Random;
 
@@ -19,9 +20,6 @@ namespace ArkadiumTest.Game
         private Vector3Int? _selected = null;
 
         [SerializeField]
-        private List<Material> _materials;
-
-        [SerializeField]
         private List<Transform> _transforms;
 
         [SerializeField]
@@ -38,7 +36,6 @@ namespace ArkadiumTest.Game
         private AudioSource _matchSound;
         [SerializeField]
         private AudioSource _noSelectSound;
-
 
         private void Awake()
         {
@@ -65,16 +62,18 @@ namespace ArkadiumTest.Game
             int index = 0;
             while (queue.TryDequeue(out Vector3Int first) && queue.TryDequeue(out Vector3Int second))
             {
-                Material material = _materials[index];
+                Color color = Configuration.Instance.Palette.BoardColors[index];
+                MaterialPropertyBlock propBlock = new();
+                propBlock.SetColor("_Color", color);
 
-                _transformTable[first].GetComponent<MeshRenderer>().material = _transformTable[second].GetComponent<MeshRenderer>().material = material;
+                _transformTable[first].GetComponent<MeshRenderer>().SetPropertyBlock(propBlock); 
+                _transformTable[second].GetComponent<MeshRenderer>().SetPropertyBlock(propBlock);
 
-                int symbol = _materials.IndexOf(material);
                 _symbolTable.Add(first, index);
                 _symbolTable.Add(second, index);
 
                 index++;
-                index %= _materials.Count;
+                index %= Configuration.Instance.Palette.BoardColors.Count;
             }
 
             Play(false);
@@ -82,7 +81,6 @@ namespace ArkadiumTest.Game
 
             _transforms = null;
             _coordinates = null;
-            _materials = null;
         }
 
         public void StartGame(Action onScore, Action onWin)

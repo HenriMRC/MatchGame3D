@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using ArkadiumTest.Configurations;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using static ArkadiumTest.Manager.SystemManagerRequest;
@@ -13,6 +14,9 @@ namespace ArkadiumTest.Manager
 
         [SerializeField]
         private LoadingScreen _loadingScreen;
+
+        [SerializeField]
+        private Configuration _configuration;
 
         private enum State : byte
         {
@@ -44,6 +48,7 @@ namespace ArkadiumTest.Manager
             }
 
             _instance = this;
+            _configuration.Initialize();
         }
 
         private void Start()
