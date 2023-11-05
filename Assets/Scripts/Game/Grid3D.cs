@@ -40,7 +40,7 @@ namespace ArkadiumTest.Game
         private void Awake()
         {
             if (_transforms.Count % 2 != 0)
-                throw new ArgumentOutOfRangeException("_transforms");
+                throw new ArgumentOutOfRangeException(nameof(_transforms));
 
             _coordinateTable = new Dictionary<Transform, Vector3Int>(_transforms.Count);
             _transformTable = new Dictionary<Vector3Int, Transform>(_transforms.Count);
